@@ -255,6 +255,7 @@ def _impl(ctx):
             flags = [
               "-o", "%{output_execpath}",
               "-Wl,-Map=%{output_execpath}.pdb",
+              "-lm",
             ],
           ),
         ],
