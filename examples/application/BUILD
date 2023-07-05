@@ -15,3 +15,4 @@ genrule(
   cmd = "objcopy -O ihex $(location :application) $(location :app.hex)" ,
   visibility = ["//visibility:public"],
 )
+
