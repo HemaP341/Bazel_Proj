@@ -6,19 +6,19 @@ package(default_visibility = ["//visibility:public"])
 # Platform overview.
 # When selected, what does it request from the Build system.
 platform(
-    name = "stm32f429zi_gcc",
+    name = "stm32f407VG_gcc",
     constraint_values = [
         "//platforms/cpu:cortex_m4f",
-        "//platforms/mcu:stm32f429zi",
+        "//platforms/mcu:stm32f407VG",
         "//platforms/compiler:gcc",
     ],
 )
 
 platform(
-    name = "stm32f429zi_iar",
+    name = "stm32f407VG_iar",
     constraint_values = [
         "//platforms/cpu:cortex_m4f",
-        "//platforms/mcu:stm32f429zi",
+        "//platforms/mcu:stm32f407VG",
         "//platforms/compiler:iar",
     ],
 )
@@ -65,7 +65,7 @@ platform(
         "//platforms/cpu:cortex_m33f",
         "//platforms/mcu:stm32u585oi",
         "//platforms/compiler:gcc",
-    ]
+    ],
 )
 
 platform(
