@@ -2,3 +2,18 @@
 
 # Migrate to the modern C/C++ toolchain resolution.
 build --incompatible_enable_cc_toolchain_resolution
+
+#Target the build to the PDS application(stm32l0 development kit) , compiler selected is IAR
+build:pds_app --platforms=//examples/microcontroller:PDS_application
+
+#Target the build to the stm32f4 development kit, compiler selected is IAR
+build:stm32f4_iar --platforms=//examples/microcontroller:stm32f4_iar
+
+#Target the build to the stm32f4 development kit, compiler selected is GCC
+build:stm32f4_gcc --platforms=//examples/microcontroller:stm32f4_gcc
+
+#Target the build to the stm32u5 development kit, compiler selected is IAR
+build:main_app_iar --platforms=//examples/microcontroller:Main_application_iar
+
+#Target the build to the stm32u5 development kit, compiler selected is GCC
+build:main_app_gcc --platforms=//examples/microcontroller:Main_application_gcc
