@@ -5,8 +5,8 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 
 # Supported microcontrollers (MCUs).
 config_setting(
-    name = "stm32f429zi",
-    constraint_values = ["//platforms/mcu:stm32f429zi"],
+    name = "stm32f407VG",
+    constraint_values = ["//platforms/mcu:stm32f407VG"],
 )
 
 # Supported compilers.
@@ -25,20 +25,20 @@ config_setting(
 
 # Supported platforms.
 selects.config_setting_group(
-    name = "stm32f429xx",
-    match_any = [":stm32f429zi"],
+    name = "stm32f407xx",
+    match_any = [":stm32f407VG"],
 )
 selects.config_setting_group(
-    name = "stm32f429xx_gcc",
-    match_all = [":stm32f429xx", ":gcc"],
+    name = "stm32f407xx_gcc",
+    match_all = [":stm32f407xx", ":gcc"],
 )
 selects.config_setting_group(
-    name = "stm32f429xx_iar",
-    match_all = [":stm32f429xx", ":iar"],
+    name = "stm32f407xx_iar",
+    match_all = [":stm32f407xx", ":iar"],
 )
 selects.config_setting_group(
-    name = "stm32f429xx_keil",
-    match_all = [":stm32f429xx", ":keil"],
+    name = "stm32f407xx_keil",
+    match_all = [":stm32f407xx", ":keil"],
 )
 
 # Library overview
@@ -47,7 +47,7 @@ selects.config_setting_group(
 cc_library(
     name = "cmsis",
     defines = select({
-        ":stm32f429xx": ["STM32F429xx"],
+        ":stm32f407xx": ["STM32F407xx"],
          "//conditions:default": [],
     }),
     includes = [
@@ -72,9 +72,14 @@ cc_library(
         glob(["Drivers/STM32F4xx_HAL_Driver/Inc/**/*.h"]) +
         [":hal_conf"],
     srcs = select({
-        ":stm32f429xx": glob(["Drivers/STM32F4xx_HAL_Driver/Src/*.c"]),
+        ":stm32f407xx": glob(["Drivers/STM32F4xx_HAL_Driver/Src/*.c"]),
          "//conditions:default": [],
     }),
+    # copts = select({
+    #     ":stm32f407xx_iar": [
+    #         "--fpu=VFPv4_sp",
+    #         ],
+    #  }),
     deps = [":cmsis"],
     visibility = ["//visibility:public"],
 )
@@ -92,14 +97,21 @@ TEMPLATES_PATH = "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates"
 cc_library(
     name = "startup",
     srcs = select({
-        ":stm32f429xx_gcc": [
-            paths.join(TEMPLATES_PATH, "gcc/startup_stm32f429xx.s")],
-        ":stm32f429xx_iar": [
-            paths.join(TEMPLATES_PATH, "iar/startup_stm32f429xx.s")],
-        ":stm32f429xx_keil": [
-            paths.join(TEMPLATES_PATH, "arm/startup_stm32f429xx.s")],
+        ":stm32f407xx_gcc": [
+            paths.join(TEMPLATES_PATH, "gcc/startup_stm32f407xx.s")],
+        ":stm32f407xx_iar": [
+            paths.join(TEMPLATES_PATH, "iar/startup_stm32f407xx.s")],
+        ":stm32f407xx_keil": [
+            paths.join(TEMPLATES_PATH, "arm/startup_stm32f407xx.s")],
         "//conditions:default": [],
     }),
+    copts = select({
+        ":stm32f407xx_gcc": [
+        ],
+        ":stm32f407xx_iar": [
+            "--fpu=VFPv4_sp",
+            ],
+     }),
     deps = [":system"],
     visibility = ["//visibility:public"],
 )
@@ -107,26 +119,29 @@ cc_library(
 cc_library(
     name = "system",
     srcs = select({
-        ":stm32f429xx": [paths.join(TEMPLATES_PATH, "system_stm32f4xx.c")],
+        ":stm32f407xx": [paths.join(TEMPLATES_PATH, "system_stm32f4xx.c")],
         "//conditions:default": [],
     }),
     copts = select({
-        ":stm32f429xx_gcc": [
-            "-DSTM32F429xx",
+        ":stm32f407xx_gcc": [
+            "-DSTM32F407xx",
         ],
-        ":stm32f429xx_iar": [
-            "-DSTM32F429xx=",
-            "-D__NO_RETURN=",
-            "-D__STATIC_INLINE=",
-            ],
-    }),
-    deps = [":cmsis"],
+        ":stm32f407xx_iar": [],
+        #     "--fpu=VFPv4_sp",
+            #  "-DSTM32F407xx=",
+            # "-D__NO_RETURN=",
+            # "-D__STATIC_INLINE=",
+            # ],
+     }),
+    deps = [":cmsis",
+    ":hal",],
 )
 
 cc_library(
     name = "linker",
     linkopts = select({
         ":gcc": ["-T$(location " + paths.join(TEMPLATES_PATH, "linker.ld)")],
+        ":iar": ["--config $(location " + paths.join(TEMPLATES_PATH, "linker.ld)"),"--fpu=VFPv4_sp",],
         "//conditions:default": [],
     }),
     deps = [paths.join(TEMPLATES_PATH, "linker.ld")],
@@ -136,13 +151,13 @@ cc_library(
 genrule(
     name = "linker.ld",
     srcs = selects.with_or({
-        ":stm32f429xx_gcc": [
+        ":stm32f407xx_gcc": [
             paths.join(TEMPLATES_PATH, "gcc/linker/stm32f429xx_flash.ld")],
-        ":stm32f429xx_iar": [
-            paths.join(TEMPLATES_PATH, "iar/linker/stm32f429xx_flash.icf")],
-        (":stm32f429xx_keil",
+        ":stm32f407xx_iar": [
+            paths.join(TEMPLATES_PATH, "iar/linker/stm32f407xx_flash.icf")],
+        (":stm32f407xx_keil",
         "//conditions:default"): [
-            paths.join(TEMPLATES_PATH, "arm/linker/stm32f429xx_flash.sct")],
+            paths.join(TEMPLATES_PATH, "arm/linker/stm32f407xx_flash.sct")],
     }),
     outs = [paths.join(TEMPLATES_PATH, "linker.ld")],
     cmd = "cp $< $@",
